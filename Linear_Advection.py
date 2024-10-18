@@ -1,5 +1,7 @@
 import numpy as np 
 import matplotlib.pyplot as plt
+cmap = plt.get_cmap('Paired')
+
 
 #setup parameters 
 u = 1
@@ -12,27 +14,25 @@ c = u*dt/dx
 
 # The initial conditions 
 def create_phi(x):
-    phi1 = np.where(x > 0.5, np.power(np.sin(2*x*np.pi),2),0)
+    phi1 = np.where(x%1 < 0.5, np.power(np.sin(2*x*np.pi),2),0)
     #phi2 = np.where((0.1 < x) & (x < 0.3), 1,0)
     return phi1#+phi2
 
-#phi = np.where(0, x > 0.05 and x < 0.5, 0.5, 0)
-phi = create_phi(x)
-phiOld = phi.copy()
-
-#plot the initial conditions 
-plt.plot(x,phi,'k',label='Inital Conditions')
-plt.legend(loc='best')
-plt.ylabel('$\\phi$')
-plt.axhline(0,linestyle=':',color='black')
-plt.ylim([-0.1,1.1])
-plt.pause(1)
+def plot_intial(x,phi):
+    #plot the initial conditions 
+    plt.plot(x,phi,'k',label='Inital Conditions')
+    plt.legend(loc='best')
+    plt.ylabel('$\\phi$')
+    plt.axhline(0,linestyle=':',color='black')
+    plt.ylim([-0.1,1.1])
+    plt.pause(1)
 
 def analytic(x,u,t):
     y = x-u*t
-    return create_phi(y%1)
+    return create_phi(y)
 
-def FTBS_scheme(phiOld):
+def FTBS_scheme(phi):
+    phiOld = phi.copy()
     for n in range(nt):
         for j in range(1,nx+1):
             phi[j] = phiOld[j] - c*(phiOld[j]-phiOld[j-1])
@@ -49,11 +49,10 @@ def FTBS_scheme(phiOld):
 
 def CTCS_scheme(phi):
     phis = [phi,analytic(x,u,dt)] #create a list of phi states 
-    print(phis[0][0])
     for n in range(2,nt):
         for j in range(1,nx):
-            phi[j] = phis[0][j] - c/2*(phis[1][j+1]-phis[1][j-1])
-        phi[0] = phis[0][0] - c/2*(phis[1][1]-phis[1][-2])
+            phi[j] = phis[0][j] - c*(phis[1][j+1]-phis[1][j-1])
+        phi[0] = phis[0][0] - c*(phis[1][1]-phis[1][-2])
         phi[-1] = phi[0]
         phis.append(phi)
         plt.cla()
@@ -67,7 +66,32 @@ def CTCS_scheme(phi):
         del phis[:-2] #Remove all but the final two elements from the list of phi states. 
     plt.show()
     
-def FTCS_scheme(phiOld):
+def CTCS_scheme_steps(phi,steps):
+    divider = nt/steps
+    phis = [phi,analytic(x,u,dt)] #create a list of phi states 
+    print(phis[0][0])
+    for n in range(2,nt):
+        for j in range(1,nx):
+            phi[j] = phis[0][j] - c*(phis[1][j+1]-phis[1][j-1])
+        phi[0] = phis[0][0] - c*(phis[1][1]-phis[1][-2])
+        phi[-1] = phi[0]
+        phis.append(phi)
+        del phis[:-2] #Remove all but the final two elements from the list of phi states. 
+        if n==2:
+            plt.plot(x,phi,c=cmap(0),label='Finite Difference ' + str(n*dt))
+            plt.plot(x,analytic(x,u,n/nt),c=cmap(1),label='Analytic ' + str(n*dt))
+        elif n%divider == 0:
+            colour = int(round(n//(divider//2),0))
+            plt.plot(x,phi,c=cmap(colour),label='Finite Difference ' + str(n*dt))
+            plt.plot(x,analytic(x,u,n/nt),c=cmap(colour),label='Analytic ' + str(n*dt),linestyle='dashed')
+    plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),fancybox=True, ncol=2)
+    plt.title(f'Courant number {c}')
+    plt.ylabel('$\\phi$')
+    plt.ylim([-0.1,1.1])
+    plt.show()
+    
+def FTCS_scheme(phi):
+    phiOld = phi.copy()
     for n in range(nt):
         for j in range(1,nx):
             phi[j] = phiOld[j] - c/2*(phiOld[j+1]-phiOld[j-1])
@@ -82,12 +106,12 @@ def FTCS_scheme(phiOld):
         plt.ylim([-0.1,1.1])
         plt.pause(0.01)
     plt.show()  
-    
-  
-    
-#CTCS_scheme(phi)
-#FTBS_scheme(phiOld)
-FTCS_scheme(phiOld)
+
+
+CTCS_scheme_steps(create_phi(x),4)   
+#CTCS_scheme(create_phi(x))
+#FTBS_scheme(create_phi(x))
+#FTCS_scheme(create_phi(x))
 #loop over all time steps 
 
 
