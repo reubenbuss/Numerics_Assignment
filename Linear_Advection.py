@@ -12,12 +12,12 @@ dx=1/nx
 dt=1/nt
 c = u*dt/dx
 
-def create_phi(x):
-    phi1 = np.where(x%1 < 0.5, np.power(np.sin(2*x*np.pi),2),0)
+def create_phi(y):
+    phi1 = np.where(y%1 < 0.5, np.power(np.sin(2*y*np.pi),2),0)
     #phi2 = np.where((0.1 < x) & (x < 0.3), 1,0)
     return phi1#+phi2
 
-def plot_intial(x,phi):
+def plot_intial(phi):
     #plot the initial conditions 
     plt.plot(x,phi,'k',label='Inital Conditions')
     plt.legend(loc='best')
@@ -26,9 +26,8 @@ def plot_intial(x,phi):
     plt.ylim([-0.1,1.1])
     plt.pause(1)
 
-def analytic(x,u,t):
-    y = x-u*t
-    return create_phi(y)
+def analytic(t):
+    return create_phi(x-u*t)
 
 def FTBS_scheme(phi):
     phiOld = phi.copy()
@@ -46,10 +45,9 @@ def FTBS_scheme(phi):
         plt.pause(0.01)
     plt.show()
 
-#Hillary here!
 def CTCS_scheme(phi):
     phis = [phi,analytic(x,u,dt)] #Initial conditions 
-    for n in range(1,50):
+    for n in range(2,nt):
         for j in range(1,nx):
             phi[j] = phis[0][j] - c*(phis[1][j+1]-phis[1][j-1])
         phi[0] = phis[0][0] - c*(phis[1][1]-phis[1][-2])
@@ -64,6 +62,28 @@ def CTCS_scheme(phi):
         plt.ylim([-0.1,1.1])
         plt.pause(0.01)
         del phis[:-2] #Remove all but the final two elements from the list of phi states. 
+    plt.show()
+
+#Hillary here!    
+def Hilary_CTCS_scheme():
+    phis = [analytic(0),analytic(dt)] #Initial conditons
+    plt.plot(x,phis[0],c=cmap(0),label='Finite Difference Initial')
+    plt.plot(x,phis[1],c=cmap(1),label='Analytic Initial',linestyle='dashed')
+    phi = np.linspace(0,1,nx+1)
+    for n in range(2,nt+1):
+        for j in range(1,nx):
+            phi[j] = phis[0][j] - c*(phis[1][j+1]-phis[1][j-1])
+        phi[0] = phis[0][0] - c*(phis[1][1]-phis[1][-2])
+        phi[-1] = phi[0]
+        phis.append(phi)
+        del phis[:-2] #Remove all but the final two elements from the list of phi states. 
+        if n==450: #to show the speed difference at non cyclic time
+            plt.plot(x,phis[0],c=cmap(2),label='Finite Difference ' + str(n*dt))
+            plt.plot(x,analytic(n/nt),c=cmap(3),label='Analytic ' + str(n*dt),linestyle='dashed')
+    plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),fancybox=True, ncol=2)
+    plt.title(f'Courant number {c}')
+    plt.ylabel('$\\phi$')
+    plt.ylim([-0.1,1.1])
     plt.show()
     
 def CTCS_scheme_steps(phi,steps):
@@ -109,7 +129,7 @@ def FTCS_scheme(phi):
 
 
 #CTCS_scheme_steps(create_phi(x),4)   
-CTCS_scheme(create_phi(x))
+Hilary_CTCS_scheme()
 #FTBS_scheme(create_phi(x))
 #FTCS_scheme(create_phi(x))
 #loop over all time steps 
