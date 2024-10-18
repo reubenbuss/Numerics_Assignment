@@ -12,7 +12,6 @@ dx=1/nx
 dt=1/nt
 c = u*dt/dx
 
-# The initial conditions 
 def create_phi(x):
     phi1 = np.where(x%1 < 0.5, np.power(np.sin(2*x*np.pi),2),0)
     #phi2 = np.where((0.1 < x) & (x < 0.3), 1,0)
@@ -47,9 +46,10 @@ def FTBS_scheme(phi):
         plt.pause(0.01)
     plt.show()
 
+#Hillary here!
 def CTCS_scheme(phi):
-    phis = [phi,analytic(x,u,dt)] #create a list of phi states 
-    for n in range(2,nt):
+    phis = [phi,analytic(x,u,dt)] #Initial conditions 
+    for n in range(1,50):
         for j in range(1,nx):
             phi[j] = phis[0][j] - c*(phis[1][j+1]-phis[1][j-1])
         phi[0] = phis[0][0] - c*(phis[1][1]-phis[1][-2])
@@ -108,8 +108,8 @@ def FTCS_scheme(phi):
     plt.show()  
 
 
-CTCS_scheme_steps(create_phi(x),4)   
-#CTCS_scheme(create_phi(x))
+#CTCS_scheme_steps(create_phi(x),4)   
+CTCS_scheme(create_phi(x))
 #FTBS_scheme(create_phi(x))
 #FTCS_scheme(create_phi(x))
 #loop over all time steps 
