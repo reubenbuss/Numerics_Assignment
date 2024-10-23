@@ -110,8 +110,6 @@ def CTCS_points(x,u,nx,nt,plot=False):
     c = u*dt/dx
     phi = create_phi(x)
     initial_phi=phi.copy()
-    print('you smell')
-    plot(x,initial_phi,c='k')
     phis = [initial_phi,analytic(x,u,dt)] #Initial conditions 
     for n in range(2,nt):
         for j in range(1,nx):
@@ -132,13 +130,17 @@ def CTCS_points(x,u,nx,nt,plot=False):
     else:
         return phis
   
+def integration(phis,nx):
+    dx = 1/nx
+    A1 = 0
+    A2 = 0
+    for i in range(0,len(phis[0])):
+        A1 += dx*phis[0][i]
+        A2 += dx*phis[-1][i]
+    return A1,A2
+
 #CTCS_scheme_steps(create_phi(x),4)   
 #CTCS_scheme_plotting_all(create_phi(x))
 #FTBS_scheme(create_phi(x))
 #FTCS_scheme(create_phi(x))
 #loop over all time steps 
-
-
-
-
-
