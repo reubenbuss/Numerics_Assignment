@@ -111,7 +111,7 @@ def CTCS_points(x,u,nx,nt,plot=False):
     phi = create_phi(x)
     initial_phi=phi.copy()
     phis = [initial_phi,analytic(x,u,dt)] #Initial conditions 
-    for n in range(2,nt):
+    for n in range(2,nt+2):
         for j in range(1,nx):
             phi[j] = phis[-2][j] - c*(phis[-1][j+1]-phis[-1][j-1])
         phi[0] = phis[-2][0] - c*(phis[-1][1]-phis[-1][-2])
@@ -129,7 +129,7 @@ def CTCS_points(x,u,nx,nt,plot=False):
         plt.show()
     else:
         return phis
-  
+
 def integration(phis,nx):
     dx = 1/nx
     A1 = 0
