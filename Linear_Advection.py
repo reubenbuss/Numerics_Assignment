@@ -130,6 +130,57 @@ def CTCS_points(x,u,nx,nt,plot=False):
     else:
         return phis
 
+def FTBS_points(x,u,nx,nt,plot=False):
+    dx=1/nx
+    dt=1/nt
+    c = u*dt/dx
+    phi = create_phi(x)
+    initial_phi=phi.copy()
+    phis = [initial_phi]
+    for n in range(nt):
+        for j in range(1,nx):
+            phi[j] = phis[-1][j] - c*(phis[-1][j]-phis[-1][j-1])
+        phi[0] = phi[-1]
+        phis.append(phi.copy())
+    if plot == True:
+        for i in range(nt):
+            plt.cla()
+            plt.plot(x,phis[i],'b',label='Finite Difference ' + str(n*dt))
+            plt.plot(x,analytic(x,u,i/nt),'r',label='Analytic ' + str(n*dt))
+            plt.legend(loc = 'best')
+            plt.ylabel('$\\phi$')
+            plt.ylim([-0.1,1.1])
+            plt.pause(0.01)
+        plt.show()
+    else:
+        return phis
+    
+def FTCS_points(x,u,nx,nt,plot=False):
+    dx=1/nx
+    dt=1/nt
+    c = u*dt/dx
+    phi = create_phi(x)
+    initial_phi=phi.copy()
+    phis = [initial_phi]
+    for n in range(nt):
+        for j in range(1,nx):
+            phi[j] = phis[-1][j] - c/2*(phis[-1][j+1]-phis[-1][j-1])
+        phi[0] = phis[-1][0] - c/2*(phis[-1][1]-phis[-1][-2])
+        phi[-1] = phi[0]
+        phis.append(phi.copy())
+    if plot == True:
+        for i in range(nt):
+            plt.cla()
+            plt.plot(x,phis[i],'b',label='Finite Difference ' + str(n*dt))
+            plt.plot(x,analytic(x,u,i/nt),'r',label='Analytic ' + str(n*dt))
+            plt.legend(loc = 'best')
+            plt.ylabel('$\\phi$')
+            plt.ylim([-0.1,1.1])
+            plt.pause(0.01)
+        plt.show()
+    else:
+        return phis    
+
 def integration(phis,nx):
     dx = 1/nx
     A1 = 0
@@ -138,6 +189,17 @@ def integration(phis,nx):
         A1 += dx*phis[0][i]
         A2 += dx*phis[-1][i]
     return A1,A2
+
+def create_plot_with_evenly_spaced_points(x,u,phis,n):
+    nt,nx=np.shape(phis)
+    for i,t in enumerate(range(0,nt,nt//n)):
+            plt.plot(x,phis[t],c=cmap(i),label='Finite Difference ' + str(t))
+            plt.plot(x,analytic(x,u,t/nt),c=cmap(i),label='Analytic ' + str(t),linestyle='dashed')
+    plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),fancybox=True, ncol=2)
+    plt.title('plot')
+    plt.ylabel('$\\phi$')
+    plt.ylim([-0.1,1.1])
+    plt.show()
 
 #CTCS_scheme_steps(create_phi(x),4)   
 #CTCS_scheme_plotting_all(create_phi(x))
